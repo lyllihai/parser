@@ -1,0 +1,24 @@
+* test tran   
+
+.model nbjt NPN IS=1e-16 BF=100 BR=1 TE=300
+
+q1   1  5  2  nbjt
+q2   3  4  2  nbjt
+c1   1  0     0.1
+c2   2  0     0.1
+c3   3  0     0.1
+c4   4  0     0.1
+c5   5  0     0.1
+rc1  6  1     2e3
+rc2  6  3     1e3
+r3   1  4     10e3
+re   2  0     100
+vcc  6  0     10
+vin  5  0     1.5
+
+  .nodeset v(1)=0 v(2)=5 v(3)=5  
+* .nodeset v(1)=5 v(2)=0 v(3)=5
+* .nodeset v(1)=5 v(2)=5 v(3)=0
+
+.tran 0.001 0.4
+.END

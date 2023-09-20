@@ -1,0 +1,8 @@
+﻿  parser.cc
+D:\石大\parser\parser\parser.cc(29,11): warning C4101: “bufPtr”: 未引用的局部变量
+D:\石大\parser\parser\parser.cc(164,10): warning C4101: “model_str”: 未引用的局部变量
+D:\石大\parser\parser\parser.cc(29,33): warning C4101: “charPtr2”: 未引用的局部变量
+D:\石大\parser\parser\parser.h(1150): warning C4715: “Component::getNode”: 不是所有的控件路径都返回值
+D:\石大\parser\parser\parser.h(1164): warning C4715: “Component::getNodeNum”: 不是所有的控件路径都返回值
+D:\石大\parser\parser\parser.h(1646): warning C4715: “CompHead::getCount”: 不是所有的控件路径都返回值
+  parser.vcxproj -> D:\石大\parser\Debug\Parser.exe

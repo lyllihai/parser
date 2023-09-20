@@ -1,0 +1,8 @@
+* test tran
+
+Vcc 1 0 4
+R1 1 2 1000
+C1 2 0 1e-5
+
+.tran 0.001 0.4
+.END

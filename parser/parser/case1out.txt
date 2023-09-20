@@ -1,0 +1,44 @@
+datum = 0		lastnode = 6
+节点 1		所连器件数为：3
+		编号： 1		类型： BJT		链接端口：0		名称：T1
+		value:-1
+		编号： 1		类型： Resistor		链接端口：1		名称：R1
+		value:2000
+		编号： 3		类型： Resistor		链接端口：0		名称：R3
+		value:10000
+节点 5		所连器件数为：2
+		编号： 1		类型： BJT		链接端口：1		名称：T1
+		value:-1
+		编号： 2		类型： VSource		链接端口：0		名称：VCC
+		value:1.5
+节点 2		所连器件数为：3
+		编号： 1		类型： BJT		链接端口：1		名称：T1
+		value:-1
+		编号： 2		类型： BJT		链接端口：1		名称：T2
+		value:-1
+		编号： 4		类型： Resistor		链接端口：0		名称：R4
+		value:100
+节点 3		所连器件数为：2
+		编号： 2		类型： BJT		链接端口：0		名称：T2
+		value:-1
+		编号： 2		类型： Resistor		链接端口：1		名称：R2
+		value:1000
+节点 4		所连器件数为：2
+		编号： 2		类型： BJT		链接端口：1		名称：T2
+		value:-1
+		编号： 3		类型： Resistor		链接端口：1		名称：R3
+		value:10000
+节点 6		所连器件数为：3
+		编号： 1		类型： Resistor		链接端口：0		名称：R1
+		value:2000
+		编号： 2		类型： Resistor		链接端口：0		名称：R2
+		value:1000
+		编号： 1		类型： VSource		链接端口：0		名称：VCC
+		value:10
+节点 0		所连器件数为：3
+		编号： 4		类型： Resistor		链接端口：1		名称：R4
+		value:100
+		编号： 1		类型： VSource		链接端口：1		名称：VCC
+		value:10
+		编号： 2		类型： VSource		链接端口：1		名称：VCC
+		value:1.5
