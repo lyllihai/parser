@@ -1,5 +1,11 @@
 #include "parser.h"
 using namespace std;
+using namespace Eigen;
+#include <iostream>
+#include <Eigen/Dense>
+#include <cmath>
+#include <vector>
+#include <string>
 
 double stripString(char* stringIn);
 void printComponents(Component* compPtr);
@@ -8,10 +14,8 @@ char* strComponentType(Component* compPtr);
 char* ComponentTypeName(Component* compPtr);  //obtain component type name
 int portNum(Component* comPtr, Node* nodePtr); //obtain port number
 bool isAccurate(double result[], int num, double accurateValue);
-void Fun(double A[][30], double x[], double b[], int n);
 void convertArray(double jacMat[][30], double A[][30], double result[], double y[], int number);
 void NR_Iterations(double jacMat[][30], double result[], double minDert[], int number, int& count, double accurateValue, int datum, int lastnode, bool Homotopy = false, double t = 0);
-
 
 
 NodeHead nodeList;
@@ -678,6 +682,7 @@ int main(int argc, char* argv[]) {
     cout << endl << endl << "----------------Using Homotopy Method to Solve Circuit Equations--------------------------" << endl << endl;
     double stepSize;
     int number = 0;
+    int iterations = 0;//迭代次数
 
     cout << "Please enter the initial data number：" << endl;
     cin >> number;
@@ -687,6 +692,7 @@ int main(int argc, char* argv[]) {
     cout << "Please enter the initial data value:" << endl;
     for (int i = 0; i < number; i++) {
         cin >> nodeValue[i + 1];
+        a[i + 1] = nodeValue[i + 1];
     }
     int count = 1;
     double accurateValue;
@@ -696,6 +702,14 @@ int main(int argc, char* argv[]) {
 
 
     while (t < 1.0) {
+        for (int i = 0; i < number; i++) {
+            for (int j = 0; j < number; j++) {
+                jacMat[i + 1][j + 1] = 0.0;
+            }
+            result[i + 1] = 0.0;
+        }
+
+        iterations = iterations + 1;
         t = t + stepSize;
 
         nodePtr = nodeList.getNode(0);
@@ -783,22 +797,19 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        for (int i = 1; i <= number; i++) {
-            initF[i] = result[i];
-            result[i] = t * initF[i];
-        }
-
-        for (int i = 0; i < number; i++) {
-            for (int j = 0; j < number; j++) {
-                initJac[i + 1][j + 1] = jacMat[i + 1][j + 1];
-                jacMat[i + 1][j + 1] = t * initJac[i + 1][j + 1];
-            }
-        }
-
         NR_Iterations(jacMat, result, minDert, number, count, accurateValue, datum, lastnode, true, t);
-
+        cout << "---------同伦迭代结果----------" << endl;
+        cout << endl;
+        for (int i = 0; i < number; i++) {
+            cout << "▲x(" << i + 1 << ") =    " << minDert[i] << endl;
+        }
+        cout << endl;
+        cout << "the result:" << endl;
+        for (int i = 0; i < number; i++) {
+            cout << "x(" << i + 1 << ") =    " << nodeValue[i + 1] << endl;
+        }
     }
-
+    cout << "----------最终运算结果-----------" << endl;
     cout << endl;
     for (int i = 0; i < number; i++) {
         cout << "▲x(" << i + 1 << ") =    " << minDert[i] << endl;
@@ -831,8 +842,14 @@ int main(int argc, char* argv[]) {
 
     cout << "please input required accuracy:" << endl;
     cin >> accurateValue;
-    cout << "1";
     for (double i = stepSize; i < stopTime + stepSize; i = i + stepSize) {
+
+        for (int i = 0; i < number; i++) {
+            for (int j = 0; j < number; j++) {
+                jacMat[i + 1][j + 1] = 0.0;
+            }
+            result[i + 1] = 0.0;
+        }
         stepNum++;
         nodePtr = nodeList.getNode(0);
         while (nodePtr != NULL) {
@@ -954,12 +971,55 @@ void NR_Iterations(double jacMat[][30], double result[], double minDert[], int n
     int specPrintJacMNA = 0;
     EquaType eqType = Modified;
 
-    double A[30][30], b[30];
-    convertArray(jacMat, A, result, b, number);
-    Fun(A, minDert, b, number);//LU分解法求解△X
+
+    VectorXd F(number);
+    MatrixXd Jac(number, number);
+    VectorXd delta(number);
+    
+    if (!Homotopy) {
+        for (int i = 0; i < number; i++) {
+            F(i) = result[i + 1];
+        }
+        for (int i = 0; i < number; i++) {
+            for (int j = 0; j < number; j++) {
+                Jac(i, j) = jacMat[i + 1][j + 1];
+            }
+        }
+    }
+    else {
+        for (int i = 1; i <= number; i++) {
+            result[i] = t * result[i] + (1 - t) * 1e-3 * (nodeValue[i] - a[i]);
+        }
+        for (int i = 0; i < number; i++) {
+            for (int j = 0; j < number; j++) {
+                if (i == j) {
+                    jacMat[i + 1][j + 1] = t * jacMat[i + 1][j + 1] + (1 - t) * 1e-3;
+                }
+            }
+        }
+    }
 
     for (int i = 0; i < number; i++) {
+        F(i) = result[i + 1];
+    }
+    for (int i = 0; i < number; i++) {
+        for (int j = 0; j < number; j++) {
+            Jac(i, j) = jacMat[i + 1][j + 1];
+        }
+    }
+
+    delta = Jac.fullPivLu().solve(-F);
+    cout << "xxxxxxxxxxxxxxxxxxxx" << endl;
+    for (int i = 0; i < number; i++) {
+        minDert[i] = delta(i);
+        cout <<"当前误差为：" << delta(i) << endl;
+    }
+
+
+    cout << "xxxxxxxxxxxxxxxxxxxx" << endl;
+    for (int i = 0; i < number; i++) {
         nodeValue[i + 1] = nodeValue[i + 1] + minDert[i];
+        cout << "当前值为：" << nodeValue[i + 1] << endl;
     }//更新X
 
 
@@ -1061,8 +1121,19 @@ void NR_Iterations(double jacMat[][30], double result[], double minDert[], int n
 
 
         if (!Homotopy) {
-            convertArray(jacMat, A, result, b, number);
-            Fun(A, minDert, b, number);
+
+            for (int i = 0; i < number; i++) {
+                F(i) = result[i + 1];
+            }
+            for (int i = 0; i < number; i++) {
+                for (int j = 0; j < number; j++) {
+                    Jac(i, j) = jacMat[i + 1][j + 1];
+                }
+            }
+            delta = Jac.fullPivLu().solve(-F);
+            for (int i = 0; i < number; i++) {
+                minDert[i] = delta(i);
+            }
 
             for (int i = 0; i < number; i++) {
                 nodeValue[i + 1] = nodeValue[i + 1] + minDert[i];
@@ -1072,17 +1143,30 @@ void NR_Iterations(double jacMat[][30], double result[], double minDert[], int n
         }
         else {
             for (int i = 1; i <= number; i++) {
-                result[i] = result[i] + (1 - t) * 0.001 * nodeValue[i];
-                //result[i] = result[i] - (1 - t) * initF[i];
+                result[i] = t * result[i] + (1 - t) * 1e-3 * (nodeValue[i] - a[i]);
             }
             for (int i = 0; i < number; i++) {
                 for (int j = 0; j < number; j++) {
-                    jacMat[i + 1][j + 1] = jacMat[i + 1][j + 1] + (1 - t) * 0.001;
+                    if (i == j) {
+                        jacMat[i + 1][j + 1] = t * jacMat[i + 1][j + 1] + (1 - t) * 1e-3;
+                    }
                 }
             }
 
-            convertArray(jacMat, A, result, b, number);
-            Fun(A, minDert, b, number);
+            for (int i = 0; i < number; i++) {
+                F(i) = nodeValue[i + 1];
+            }
+            for (int i = 0; i < number; i++) {
+                for (int j = 0; j < number; j++) {
+                    Jac(i, j) = jacMat[i + 1][j + 1];
+                }
+            }
+            delta = Jac.fullPivLu().solve(-F);
+            cout << "xxxxxxxxxxxxxxxxxxxx" << endl;
+            for (int i = 0; i < number; i++) {
+                minDert[i] = delta(i);
+                cout << "当前误差为：" << delta(i) << endl;
+            }
 
             for (int i = 0; i < number; i++) {
                 nodeValue[i + 1] = nodeValue[i + 1] + minDert[i];
@@ -1091,83 +1175,18 @@ void NR_Iterations(double jacMat[][30], double result[], double minDert[], int n
 
         }
 
-
-    }
-}
-
-
-void convertArray(double jacMat[][30], double A[][30], double result[], double y[], int number) {
-    for (int i = 0; i < number; i++) {
-        for (int j = 0; j < number; j++) {
-            A[i][j] = jacMat[i + 1][j + 1];
+        /*cout <<"-----------------NR迭代--------------- ";
+        cout << endl;
+        for (int i = 0; i < number; i++) {
+            cout << "▲x(" << i + 1 << ") =    " << minDert[i] << endl;
         }
-
-        y[i] = -result[i + 1];
-    }
-}
-
-
-void Fun(double A[][30], double x[], double b[], int n) {
-    //初始化L和U矩阵
-    double L[30][30] = { 0 }, U[30][30] = { 0 }, y[30] = { 0 };
-    for (int j = 0; j < n; j++) {
-        U[0][j] = A[0][j];
-        L[j][j] = 1.0;
+        cout << endl;
+        cout << "the result:" << endl;
+        for (int i = 0; i < number; i++) {
+            cout << "x(" << i + 1 << ") =    " << nodeValue[i + 1] << endl;
+        }*/
 
     }
-    for (int i = 1; i < n; i++) {
-        if (U[0][0] != 0.0) {
-            L[i][0] = A[i][0] / U[0][0];
-        }
-
-
-    }
-    //计算 L、U 矩阵
-    for (int k = 1; k < n; k++) {
-        double temp = 0;
-        for (int j = k; j < n; j++) {
-            temp = 0;
-            for (int r = 0; r < k; r++) {
-                temp += L[k][r] * U[r][j];
-            }
-            U[k][j] = A[k][j] - temp;
-        }
-        for (int i = k + 1; i < n; i++) {
-            temp = 0;
-            for (int l = 0; l < k; l++) {
-                temp += L[i][l] * U[l][k];
-            }
-            if (U[k][k] != 0.0) {
-                L[i][k] = (A[i][k] - temp) / U[k][k];
-            }
-
-        }
-    }
-    //求矩阵y
-    y[0] = b[0];
-    for (int i = 1; i < n; i++) {
-        double temp = 0;
-        for (int l = 0; l < i; l++) {
-            temp += L[i][l] * y[l];
-        }
-        y[i] = b[i] - temp;
-    }
-    //求矩阵x
-    if (U[n - 1][n - 1] != 0.0) {
-        x[n - 1] = y[n - 1] / U[n - 1][n - 1];
-    }
-
-    for (int i = n - 2; i >= 0; i--) {
-        double temp = 0;
-        for (int l = n - 1; l > i; l--) {
-            temp += U[i][l] * x[l];
-        }
-        if (U[i][i] != 0.0) {
-            x[i] = (y[i] - temp) / U[i][i];
-        }
-
-    }
-
 }
 
 

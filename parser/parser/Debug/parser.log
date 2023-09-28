@@ -1,8 +1,11 @@
 ﻿  parser.cc
-D:\石大\parser\parser\parser.cc(29,11): warning C4101: “bufPtr”: 未引用的局部变量
-D:\石大\parser\parser\parser.cc(164,10): warning C4101: “model_str”: 未引用的局部变量
-D:\石大\parser\parser\parser.cc(29,33): warning C4101: “charPtr2”: 未引用的局部变量
-D:\石大\parser\parser\parser.h(1150): warning C4715: “Component::getNode”: 不是所有的控件路径都返回值
-D:\石大\parser\parser\parser.h(1164): warning C4715: “Component::getNodeNum”: 不是所有的控件路径都返回值
-D:\石大\parser\parser\parser.h(1646): warning C4715: “CompHead::getCount”: 不是所有的控件路径都返回值
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include\Eigen\src\Core\arch\Default\Half.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include\Eigen\src\Core\arch\Default\BFloat16.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30037\include\Eigen\src\Core\arch\Default\GenericPacketMathFunctions.h(676,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\石大\parser\parser\parser.cc(33,11): warning C4101: “bufPtr”: 未引用的局部变量
+D:\石大\parser\parser\parser.cc(168,10): warning C4101: “model_str”: 未引用的局部变量
+D:\石大\parser\parser\parser.cc(33,33): warning C4101: “charPtr2”: 未引用的局部变量
+D:\石大\parser\parser\parser.h(1153): warning C4715: “Component::getNode”: 不是所有的控件路径都返回值
+D:\石大\parser\parser\parser.h(1167): warning C4715: “Component::getNodeNum”: 不是所有的控件路径都返回值
+D:\石大\parser\parser\parser.h(1649): warning C4715: “CompHead::getCount”: 不是所有的控件路径都返回值
   parser.vcxproj -> D:\石大\parser\Debug\Parser.exe

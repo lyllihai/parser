@@ -8,6 +8,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <string.h>
+#include <cmath>
+#include <Eigen/Dense>
+#include <unordered_map>
 #pragma warning(disable:4996)
 using namespace std;
 
@@ -16,7 +19,7 @@ const double K = 1.38E-23;
 const double Q = 1.60E-19;
 
 double nodeValue[30] = { 0.0 }, jacMat[30][30] = { 0.0 }, result[30] = { 0.0 }, minDert[30] = { 0.0 }, initF[30] = { 0.0 }, preU = 0.0, stepSize = 0.0, stopTime = 0.0;
-double initJac[30][30] = { 0.0 }, preX[30] = { 0.0 };
+double initJac[30][30] = { 0.0 }, preX[30] = { 0.0 }, a[30] = { 0.0 };
 int Vsoure[10][4] = { 0 };    /*
 						   Vsoure[x][0]; 表示V(x),是否链接两个非零节点
 						   Vsoure[x][1]; 表示V(x),的F(x)是否已经输出一次
@@ -2013,8 +2016,6 @@ void Component::printMat(int nodeNum, int datum, int lastnode, double result[], 
 	case Resistor:
 		if (con0.node->getNum() == nodeNum) {
 
-
-
 			if (con0.node->getNameNum() != datum && con1.node->getNameNum() != datum) {
 				result[nameNum] = result[nameNum] + (nodeValue[con0.node->getNameNum()] - nodeValue[con1.node->getNameNum()]) / value;
 			}
@@ -2045,16 +2046,13 @@ void Component::printMat(int nodeNum, int datum, int lastnode, double result[], 
 			break;
 		}
 		else {
-			result[nameNum] = result[nameNum] + value / stepSize * (nodeValue[con0.node->getNameNum()] - nodeValue[con1.node->getNameNum()] - preX[con0.node->getNameNum()] + preX[con1.node->getNameNum()]);
+			result[nameNum] = result[nameNum] + value / stepSize * 
+				(nodeValue[con0.node->getNameNum()] - nodeValue[con1.node->getNameNum()] - 
+					preX[con0.node->getNameNum()] + preX[con1.node->getNameNum()]);
 			break;
 		}
 
 	case Inductor:
-		if (con0.node->getNum() == nodeNum) {}
-
-		else if (con1.node->getNum() == nodeNum)
-		{
-		}
 		break;
 	};
 	return;
@@ -2721,6 +2719,7 @@ void Component::printJacMat(int nodeNum, int datum, int wrt, bool MNAflag, doubl
 				jacMat[fristIndex][scendIndex] = jacMat[fristIndex][scendIndex] - value / stepSize;
 			else
 				jacMat[fristIndex][scendIndex] = jacMat[fristIndex][scendIndex] + 0;
+
 			break;
 		}
 
