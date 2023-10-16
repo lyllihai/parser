@@ -20,7 +20,7 @@ const double Q = 1.60E-19;
 
 
 double nodeValue[30] = { 0.0 }, jacMat[30][30] = { 0.0 }, result[30] = { 0.0 }, minDert[30] = { 0.0 }, initF[30] = { 0.0 },
-stepSize = 0.0, stopTime = 0.0, G = 1e-3, a[30] = { 0.0 }, vsourChangIndex = 0.0, endTimeFlag = 0.0;
+stepSize = 0.0, stopTime = 0.0, G = 1e-3, a[30] = { 0.0 }, vsourChangIndex = 0.0, endTimeFlag = 0.0, preI[10] = { 0.0 };
 double initJac[30][30] = { 0.0 }, preX[30] = { 0.0 }, a_value[30] = { 0.0 }, VminDert[30] = { 0.0 }, PnodeValue[30] = { 0.0 };
 int Vsoure[10][4] = { 0 };    /*
 						   Vsoure[x][0]; 表示V(x),是否链接两个非零节点
@@ -2099,13 +2099,13 @@ void Component::printMat(int nodeNum, int datum, int lastnode, double result[], 
 
 			if (con0.node->getNum() == nodeNum) {
 
-				result[nameNum] = result[nameNum] + preX[con0.node->getNameNum() + 2] + stepSize / value * (nodeValue[con0.node->getNameNum()] - nodeValue[con1.node->getNameNum()]);
+				result[nameNum] = result[nameNum] - preI[compNum] + stepSize / value * (nodeValue[con0.node->getNameNum()] - nodeValue[con1.node->getNameNum()]);
 
 
 			}
 			if (con1.node->getNum() == nodeNum) {
 
-				result[nameNum] = result[nameNum] - preX[con0.node->getNameNum() + 2] - stepSize / value * (nodeValue[con0.node->getNameNum()] - nodeValue[con1.node->getNameNum()]);
+				result[nameNum] = result[nameNum] + preI[compNum] - stepSize / value * (nodeValue[con0.node->getNameNum()] - nodeValue[con1.node->getNameNum()]);
 
 
 			}
@@ -2814,18 +2814,18 @@ void Component::printJacMat(int nodeNum, int datum, int wrt, bool MNAflag, doubl
 		else {
 			if (con0.node->getNum() == nodeNum) {
 				if (con0.node->getNameNum() == wrt) {
-					jacMat[fristIndex][scendIndex] = jacMat[fristIndex][scendIndex] - stepSize / value;
+					jacMat[fristIndex][scendIndex] = jacMat[fristIndex][scendIndex] + stepSize / value;
 				}
 				else if (con1.node->getNameNum() == wrt) {
-					jacMat[fristIndex][scendIndex] = jacMat[fristIndex][scendIndex] + stepSize / value;
+					jacMat[fristIndex][scendIndex] = jacMat[fristIndex][scendIndex] - stepSize / value;
 				}
 			}
 			if (con1.node->getNum() == nodeNum) {
 				if (con0.node->getNameNum() == wrt) {
-					jacMat[fristIndex][scendIndex] = jacMat[fristIndex][scendIndex] + stepSize / value;
+					jacMat[fristIndex][scendIndex] = jacMat[fristIndex][scendIndex] - stepSize / value;
 				}
 				else if (con1.node->getNameNum() == wrt) {
-					jacMat[fristIndex][scendIndex] = jacMat[fristIndex][scendIndex] - stepSize / value;
+					jacMat[fristIndex][scendIndex] = jacMat[fristIndex][scendIndex] + stepSize / value;
 				}
 			}
 			break;

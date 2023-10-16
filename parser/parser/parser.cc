@@ -522,7 +522,8 @@ int main(int argc, char* argv[]) {
 
     cout << "   1、N-R" << endl;
     cout << "   2、Homotopy" << endl;
-    cout << "   3、ptran" << endl;
+    cout << "   3、ptran（ramping voltage source）" << endl;
+    cout << "   4、ptran" << endl;
 
     cout << "*************************************" << endl;
 
@@ -648,9 +649,8 @@ int main(int argc, char* argv[]) {
         isChangVsoure = 1;
         vsourChangIndex = 0.0;
 
-        /*cout << "Please enter the initial data number：" << endl;
-        cin >> number;*/
-        number = 8;
+        cout << "Please enter the initial data number：" << endl;
+        cin >> number;
 
         /*cout << "please input required accuracy:" << endl;
         cin >> accurateValue;*/
@@ -684,8 +684,9 @@ int main(int argc, char* argv[]) {
                 break;
             }
 
+            //outfile << "currentTime:" << currentTime << endl;
             for (int j = 1; j <= number; j++) {
-                outfile << "Time:" << currentTime << ",x" << j << "=" << nodeValue[j] << endl;
+                outfile << "Time:" << pcount << ",x" << j << "=" << nodeValue[j] << endl;
             }
             outfile << "----------------------------" << endl;
             if (count < 5) {
@@ -716,8 +717,96 @@ int main(int argc, char* argv[]) {
             }//初始化F、Jac、nodevalue（中间结果)
             
         }//while
-        cout << pcount << endl;
+        cout << "NR:" << sum << endl;
+        cout << "ptran:" << pcount << endl;
     }
+    else if (choose == 4) {
+
+    // -------------------------------ptran---------------------------------------------------
+    outfile.open("ptran.txt", ios::out);
+    isTran = 1;              //--------------------
+    int number = 0;
+    int count = 0, sum = 0, pcount = 0;
+    double accurateValue, currentTime = 0, endtime = 1e30;
+    double minStep = 1e-6;
+
+    cout << "Please enter the initial data number：" << endl;
+    cin >> number;
+
+
+    /*cout << "please input required accuracy:" << endl;
+    cin >> accurateValue;*/
+    accurateValue = 0.001;
+
+    cout << "please input step:" << endl;
+    cin >> stepSize;
+
+    while (true) {
+        pcount++;
+        currentTime = currentTime + stepSize;
+
+        if (currentTime > endtime) {
+            cout << "timeout" << endl;
+            break;
+        }
+        if (stepSize < minStep) {
+            cout << "stepSize is too small" << endl;
+            break;
+        }
+
+        NR_Iterations(jacMat, result, minDert, number, count, accurateValue, datum, lastnode);
+        if (isClose(preX, nodeValue, number, 1e-5)) {
+            break;
+        }
+
+        for (int j = 1; j <= number; j++) {
+            outfile << "Time:" << currentTime << ",x" << j << "=" << nodeValue[j] << endl;
+        }
+        outfile << "----------------------------" << endl;
+        if (count < 5) {
+            stepSize = stepSize * 2;
+            for (int i = 0; i < number; i++) {
+                preX[i + 1] = nodeValue[i + 1];//存储前一时刻
+            }
+        }
+        else if (count > 4 && count < 10) {
+            stepSize = stepSize;
+            for (int i = 0; i < number; i++) {
+                preX[i + 1] = nodeValue[i + 1];//存储前一时刻
+            }
+        }
+        else {
+            currentTime = currentTime - stepSize;//后退
+            stepSize = stepSize / 8.0;
+        }
+        sum = sum + count;
+        count = 0;
+
+        Component* comPtrs = compList.getComp(0);
+        while (comPtrs != NULL) {
+            if (comPtrs->getType() == Inductor) {
+
+                preI[comPtrs->getcompNum()] = preI[comPtrs->getcompNum()] + stepSize * (nodeValue[comPtrs->getConVal(1)] - nodeValue[comPtrs->getConVal(0)]) / comPtrs->getVal();
+
+            }
+
+            comPtrs = comPtrs->getNext();
+        }
+
+        for (int i = 0; i < number; i++) {
+            for (int j = 0; j < number; j++) {
+                jacMat[i + 1][j + 1] = 0.0;
+            }
+            result[i + 1] = 0.0;
+            nodeValue[i + 1] = 0.0;
+        }//初始化F、Jac、nodevalue（中间结果)
+
+    }//while
+    cout << "NR迭代次数：" << sum << endl;
+    cout <<"伪瞬态迭代次数：" << pcount << endl;
+
+
+}
     return 0;
 }
 
@@ -758,8 +847,9 @@ void NR_Iterations(double jacMat[][30], double result[], double minDert[], int n
     for (int i = 0; i < number; i++) {
         nodeValue[i + 1] = nodeValue[i + 1] + minDert[i];
         //cout << "当前值为：" << nodeValue[i + 1] << endl;
+        
     }//更新X
-    
+
 
     for (int i = 0; i < number; i++) {
         for (int j = 0; j < number; j++) {
